@@ -1,7 +1,8 @@
 import numpy as np
 import math, sys
 from random import gauss
-from analysis_algorithms import *
+from sklearn.cluster import KMeans
+from sklearn.decomposition import PCA
 
 VALUES_FOR_N = [20, 1000, 10000, 100000]
 VALUES_FOR_K = [5,50, 100, 200]
@@ -32,7 +33,7 @@ def combine_parameters():
                 for s in values_for_s:
                     print(f"generating dataset for \nn = {n}\nk = {k}\nd = {d}\ns = {s}")
                     data = generate_dataset(n, k, d, s)
-                    pca(data,2)
+
 
 if __name__ == "__main__":
     combine_parameters()
