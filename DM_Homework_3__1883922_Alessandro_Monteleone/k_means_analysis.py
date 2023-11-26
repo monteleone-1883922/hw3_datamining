@@ -70,21 +70,23 @@ class Report():
     def experiment(self, data, parameters):
         experiment_results = {"parameters": parameters, "n_components": self.pca.n_components}
         start_time = int(time.time() * 1000)
+        self.kmeans.fit(data)
+        experiment_results["kmeans_running_time"] = int(time.time() * 1000) - start_time
+        experiment_results["kmeans_labels"] = self.kmeans.labels_.tolist()
+        experiment_results["kmeans_centers"] = self.kmeans.cluster_centers_.tolist()
+        start_time = int(time.time() * 1000)
         self.pca.fit(data)
         data_transformed = self.pca.transform(data)
         experiment_results["pca_running_time"] = int(time.time() * 1000) - start_time
-        start_time = int(time.time() * 1000) - start_time
+        del data
+        start_time = int(time.time() * 1000)
         self.kmeans.fit(data_transformed)
         experiment_results["kmeans_after_pca_running_time"] = int(time.time() * 1000) - start_time
         experiment_results["kmeans_pca_total_running_time"] = experiment_results["kmeans_after_pca_running_time"] + \
                                                               experiment_results["pca_running_time"]
         experiment_results["kmeans_pca_labels"] = self.kmeans.labels_.tolist()
         experiment_results["kmeans_pca_centers"] = self.kmeans.cluster_centers_.tolist()
-        start_time = int(time.time() * 1000) - start_time
-        self.kmeans.fit(data)
-        experiment_results["kmeans_running_time"] = int(time.time() * 1000) - start_time
-        experiment_results["kmeans_labels"] = self.kmeans.labels_.tolist()
-        experiment_results["kmeans_centers"] = self.kmeans.cluster_centers_.tolist()
+
         self.store_results(experiment_results)
 
 
