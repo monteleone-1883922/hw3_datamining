@@ -11,10 +11,18 @@ VALUES_FOR_N = [1000, 10000, 100000]
 VALUES_FOR_K = [50, 100, 200]
 REPORT_FILE = "experiment_results.json"
 COMPONENTS = 3
+PRECISION = 16
 
 
 def generate_dataset(n: int, k: int, d: int, s: float):
-    data = np.ndarray(shape=(k * n, d + k), dtype=float, order='F')
+
+    if PRECISION == 32:
+        type = np.float32
+    elif PRECISION == 16:
+        type = np.float16
+    else:
+        type = float
+    data = np.ndarray(shape=(k * n, d + k), dtype=type, order='F')
     # for riga
     for i in range(k * n):
         # for el in gauss matrix
@@ -86,7 +94,7 @@ def combine_parameters():
             values_for_d = [k, 100 * k, 100 * k ** 2]
             values_for_s = [1 / k, 1 / math.sqrt(k), 0.5]
             for d in values_for_d:
-                report.set_pca((n+d)//COMPONENTS)
+                report.set_pca((k+d)//COMPONENTS)
                 for s in values_for_s:
                     parameters = {
                         "n": n,
@@ -94,7 +102,7 @@ def combine_parameters():
                         "d": d,
                         "s": s
                     }
-                    print(f"generating dataset for \nn = {n}\nk = {k}\nd = {d}\ns = {s}")
+                    print(f"generating dataset for \nn = {n}\nk = {k}\nd = {d}\ns = {s}\nnum component is {(k+d)//COMPONENTS} ")
                     data = generate_dataset(n, k, d, s)
                     report.experiment(data,parameters)
 
