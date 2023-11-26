@@ -12,11 +12,10 @@ VALUES_FOR_K = [50, 100, 200]
 REPORT_FILE = "experiment_results.json"
 COMPONENTS = 3
 PRECISION = 16
-
+SEED = 42
 
 
 def generate_dataset(n: int, k: int, d: int, s: float):
-
     if PRECISION == 32:
         dtype = np.float32
     elif PRECISION == 16:
@@ -41,17 +40,17 @@ def generate_dataset(n: int, k: int, d: int, s: float):
 class Report():
 
     def __init__(self, report_file):
-        self.kmeans = KMeans(init='k-means++')
-        self.pca = PCA()
+        self.kmeans = KMeans(init='k-means++', random_state=SEED)
+        self.pca = PCA(random_state=SEED)
         self.report_file = report_file
         with open(report_file, "w") as report:
             json.dump({}, report)
 
     def set_pca(self, components):
-        self.pca = PCA(n_components=components)
+        self.pca = PCA(n_components=components, random_state=SEED)
 
     def set_kmeans(self, k):
-        self.kmeans = KMeans(n_clusters=k, init='k-means++')
+        self.kmeans = KMeans(n_clusters=k, init='k-means++', random_state=SEED)
 
     def store_results(self, results):
         with open(self.report_file, "r+") as report_file:
@@ -99,7 +98,7 @@ def combine_parameters():
             values_for_d = [k, 100 * k, 100 * k ** 2]
             values_for_s = [1 / k, 1 / math.sqrt(k), 0.5]
             for d in values_for_d:
-                report.set_pca((k+d)//COMPONENTS)
+                report.set_pca((k + d) // COMPONENTS)
                 for s in values_for_s:
                     parameters = {
                         "n": n,
@@ -107,10 +106,11 @@ def combine_parameters():
                         "d": d,
                         "s": s
                     }
-                    print(f"generating dataset for \nn = {n}\nk = {k}\nd = {d}\ns = {s}\nnum component is {(k+d)//COMPONENTS} ")
+                    print(
+                        f"generating dataset for \nn = {n}\nk = {k}\nd = {d}\ns = {s}\nnum component is {(k + d) // COMPONENTS} ")
                     data = generate_dataset(n, k, d, s)
-                    report.experiment(data,parameters)
-
+                    print("start experiment")
+                    report.experiment(data, parameters)
 
 
 if __name__ == "__main__":
