@@ -14,15 +14,16 @@ COMPONENTS = 3
 PRECISION = 16
 
 
+
 def generate_dataset(n: int, k: int, d: int, s: float):
 
     if PRECISION == 32:
-        type = np.float32
+        dtype = np.float32
     elif PRECISION == 16:
-        type = np.float16
+        dtype = np.float16
     else:
-        type = float
-    data = np.ndarray(shape=(k * n, d + k), dtype=type, order='F')
+        dtype = float
+    data = np.ndarray(shape=(k * n, d + k), dtype=dtype, order='F')
     # for riga
     for i in range(k * n):
         # for el in gauss matrix
@@ -55,6 +56,7 @@ class Report():
     def store_results(self, results):
         with open(self.report_file, "r+") as report_file:
             report = json.load(report_file)
+            report_file.seek(0)
             key = self.parameters_to_key(results["parameters"])
             report[key] = results
             json.dump(report, report_file)
@@ -76,13 +78,14 @@ class Report():
         experiment_results["kmeans_after_pca_running_time"] = int(time.time() * 1000) - start_time
         experiment_results["kmeans_pca_total_running_time"] = experiment_results["kmeans_after_pca_running_time"] + \
                                                               experiment_results["pca_running_time"]
-        experiment_results["kmeans_pca_labels"] = self.kmeans.labels_
-        experiment_results["kmeans_pca_centers"] = self.kmeans.cluster_centers_
+        experiment_results["kmeans_pca_labels"] = self.kmeans.labels_.tolist()
+        experiment_results["kmeans_pca_centers"] = self.kmeans.cluster_centers_.tolist()
         start_time = int(time.time() * 1000) - start_time
         self.kmeans.fit(data)
         experiment_results["kmeans_running_time"] = int(time.time() * 1000) - start_time
-        experiment_results["kmeans_labels"] = self.kmeans.labels_
-        experiment_results["kmeans_centers"] = self.kmeans.cluster_centers_
+        experiment_results["kmeans_labels"] = self.kmeans.labels_.tolist()
+        experiment_results["kmeans_centers"] = self.kmeans.cluster_centers_.tolist()
+        self.store_results(experiment_results)
 
 
 def combine_parameters():
@@ -109,4 +112,5 @@ def combine_parameters():
 
 
 if __name__ == "__main__":
+    np.random.seed(42)
     combine_parameters()
