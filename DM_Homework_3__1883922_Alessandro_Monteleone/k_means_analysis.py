@@ -15,6 +15,7 @@ COMPONENTS = 3
 PRECISION = 16
 SEED = 42
 TOLLERANCE = 2e-3
+MAX_ITERATIONS = 10
 
 
 def generate_dataset(n: int, k: int, d: int, s: float):
@@ -42,20 +43,20 @@ def generate_dataset(n: int, k: int, d: int, s: float):
 class Report():
 
     def __init__(self, report_file, report_compressed_file):
-        self.kmeans = KMeans(init='k-means++', random_state=SEED, tol=TOLLERANCE)
+        self.kmeans = KMeans(init='k-means++', random_state=SEED, tol=TOLLERANCE, max_iter=MAX_ITERATIONS)
         self.pca = PCA(random_state=SEED)
         self.report_file = report_file
         self.report_compressed_file = report_compressed_file
         with open(report_file, "w") as report:
-            json.dump({}, report)
+            json.dump({}, report, indent=4)
         with open(report_compressed_file, "w") as report:
-            json.dump({}, report)
+            json.dump({}, report, indent=4)
 
     def set_pca(self, components):
         self.pca = PCA(n_components=components, random_state=SEED)
 
     def set_kmeans(self, k):
-        self.kmeans = KMeans(n_clusters=k, init='k-means++', random_state=SEED, tol=1e-3)
+        self.kmeans = KMeans(n_clusters=k, init='k-means++', random_state=SEED, tol=1e-3, max_iter=MAX_ITERATIONS)
 
     def store_results(self, results):
         self.store_results_file(results, self.report_file)
@@ -69,7 +70,7 @@ class Report():
             report_file.seek(0)
             key = self.parameters_to_key(results["parameters"])
             report[key] = results
-            json.dump(report, report_file)
+            json.dump(report, report_file, indent=4)
 
     def parameters_to_key(self, parameters):
         result = ""
