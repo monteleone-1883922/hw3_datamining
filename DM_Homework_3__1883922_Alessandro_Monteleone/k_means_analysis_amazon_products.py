@@ -3,13 +3,14 @@ import pandas as pd
 import plotly.graph_objs as go
 from sklearn.cluster import KMeans
 import numpy as np
+import warnings
 
 MODEL = "facebook/bart-base"
 DATA_FILE_PATH = "amazon_products_gpu.tsv"
 SEED = 42
 TOLLERANCE = 2e-3
 MAX_ITERATIONS = 10
-MAX_MEANS = 40
+MAX_MEANS = 150
 
 
 def load_raw_data():
@@ -41,8 +42,8 @@ def retype_dataframe(df: pd.DataFrame) -> None:
 
 def produce_elbow_curve(data, num_means):
     result = []
-    for i in range(num_means):
-        kmeans = KMeans(init='k-means++', random_state=SEED, tol=TOLLERANCE, max_iter=MAX_ITERATIONS)
+    for i in range(1, num_means + 1):
+        kmeans = KMeans(init='k-means++', n_clusters=i, random_state=SEED, tol=TOLLERANCE, max_iter=MAX_ITERATIONS)
         kmeans.fit(data)
         result.append(kmeans.inertia_)
     return result
@@ -51,7 +52,7 @@ def produce_elbow_curve(data, num_means):
 def print_elbow_curve(variances, num_means):
     # Crea il grafico della curva dell'Elbow con Plotly
     fig = go.Figure()
-    fig.add_trace(go.Scatter(x=list(range(num_means)), y=variances, mode='lines+markers'))
+    fig.add_trace(go.Scatter(x=list(range(1, num_means + 1)), y=variances, mode='lines+markers'))
 
     # Aggiungi titoli e etichette
     fig.update_layout(
@@ -63,15 +64,16 @@ def print_elbow_curve(variances, num_means):
     # Mostra il grafico
     fig.show()
 
+
 def add_padding(data):
     max_len = len(max(data, key=lambda x: len(x)))
     for i in range(len(data)):
         data[i] = data[i] + [0 for _ in range(max_len - len(data[i]))]
 
 
-
-
 def process_raw_data():
+    # Ignora i FutureWarning
+    warnings.simplefilter(action='ignore', category=FutureWarning)
     tokenizer = AutoTokenizer.from_pretrained(MODEL)
     data = load_raw_data()
     for i in range(len(data)):
