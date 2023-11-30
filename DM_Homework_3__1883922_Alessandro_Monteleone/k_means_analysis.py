@@ -2,7 +2,7 @@ import json
 import time
 
 import numpy as np
-import math, sys
+import math
 from random import gauss
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
@@ -82,7 +82,8 @@ class Report():
         k = parameters["k"]
         n = parameters["n"]
         correct_clusters = [[j + i for j in range(0, n * k, k)] for i in range(k)]
-        experiment_results = compressed_results = {"parameters": parameters, "n_components": self.pca.n_components}
+        experiment_results = {"parameters": parameters, "n_components": self.pca.n_components}
+        compressed_results = {"parameters": parameters, "n_components": self.pca.n_components}
         start_time = int(time.time() * 1000)
         self.kmeans.fit(data)
         experiment_results["kmeans_running_time"] = compressed_results["kmeans_running_time"] = int(
@@ -96,13 +97,16 @@ class Report():
         start_time = int(time.time() * 1000)
         self.pca.fit(data)
         data_transformed = self.pca.transform(data)
-        experiment_results["pca_running_time"] = int(time.time() * 1000) - start_time
+        experiment_results["pca_running_time"] = compressed_results["pca_running_time"] = int(
+            time.time() * 1000) - start_time
         del data
         start_time = int(time.time() * 1000)
         self.kmeans.fit(data_transformed)
-        experiment_results["kmeans_after_pca_running_time"] = int(time.time() * 1000) - start_time
-        experiment_results["kmeans_pca_total_running_time"] = experiment_results["kmeans_after_pca_running_time"] + \
-                                                              experiment_results["pca_running_time"]
+        experiment_results["kmeans_after_pca_running_time"] = compressed_results["kmeans_after_pca_running_time"] = int(
+            time.time() * 1000) - start_time
+        experiment_results["kmeans_pca_total_running_time"] = compressed_results["kmeans_pca_total_running_time"] = \
+        experiment_results["kmeans_after_pca_running_time"] + \
+        experiment_results["pca_running_time"]
         clusters = divide_clusters(self.kmeans.labels_.tolist())
         experiment_results["kmeans_similarity"] = compressed_results["similarity"] = get_clusters_similarity(clusters,
                                                                                                              k, n)
@@ -139,15 +143,34 @@ def combine_parameters():
 
 
 def combine_results():
-    with open("experiment_results2.json") as f:
+    with open("experiment_results_compressed4.json", "r") as f:
         ex2 = json.load(f)
 
-    with open("experiment_results.json", "r") as f1:
+    with open("experiment_results_compressed.json", "r") as f1:
         ex1 = json.load(f1)
-    for key in ex2.keys():
-        ex1[key] = ex2[key]
-    with open("experiment_results.json", "w") as f2:
-        json.dump(ex1, f2)
+    for key in ex1.keys():
+        ex1[key]["kmeans_running_time"] = convert_time_format(ex1[key]["kmeans_running_time"])
+        ex1[key]["pca_running_time"] = convert_time_format(ex1[key]["pca_running_time"])
+        ex1[key]["kmeans_after_pca_running_time"] = convert_time_format(ex1[key]["kmeans_after_pca_running_time"])
+        ex1[key]["kmeans_pca_total_running_time"] = convert_time_format(ex1[key]["kmeans_pca_total_running_time"])
+    # for key in ex2.keys():
+    #     ex1[key] = ex2[key]
+    with open("experiment_results_compressed.json", "w") as f2:
+        json.dump(ex1, f2, indent=4)
+
+def convert_time_format(milliseconds):
+    if milliseconds >= 1000:
+        seconds = milliseconds // 1000
+        milliseconds_left = milliseconds % 1000
+
+        if seconds < 60:
+            return f"{seconds} s {milliseconds_left} ms"
+        else:
+            minutes = seconds // 60
+            seconds_left = seconds % 60
+            return f"{minutes} m {seconds_left} s {milliseconds_left} ms"
+    return f"{milliseconds} ms"
+
 
 
 def divide_clusters(clusters):
@@ -175,6 +198,6 @@ def compute_jaccard_similarity(set1, set2):
 
 
 if __name__ == "__main__":
-    # combine_results()
-    np.random.seed(SEED)
-    combine_parameters()
+    combine_results()
+    # np.random.seed(SEED)
+    # combine_parameters()
