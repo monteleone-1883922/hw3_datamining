@@ -1,11 +1,13 @@
 import json
 import time
-
+import plotly.graph_objs as go
 import numpy as np
 import math
 from random import gauss
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
+import sys
+from enum import Enum
 
 VALUES_FOR_N = [1000, 10000, 100000]
 VALUES_FOR_K = [50, 100, 200]
@@ -16,6 +18,13 @@ PRECISION = 16
 SEED = 42
 TOLLERANCE = 2e-3
 MAX_ITERATIONS = 10
+
+
+class OperationalMode(Enum):
+    DO_EXPERIMENT = "experiment"
+    COMBINE_RESULTS = "combine"
+    REFORMAT_TIME = "time"
+    PRINT_METRIC = "print"
 
 
 def generate_dataset(n: int, k: int, d: int, s: float):
@@ -89,8 +98,9 @@ class Report():
         experiment_results["kmeans_running_time"] = compressed_results["kmeans_running_time"] = int(
             time.time() * 1000) - start_time
         clusters = divide_clusters(self.kmeans.labels_.tolist())
-        experiment_results["kmeans_similarity"] = compressed_results["similarity"] = get_clusters_similarity(clusters,
-                                                                                                             k, n)
+        experiment_results["kmeans_similarity"] = compressed_results["kmeans_similarity"] = get_clusters_similarity(
+            clusters,
+            k, n)
         experiment_results["kmeans_cost"] = compressed_results["kmeans_cost"] = self.kmeans.inertia_
         experiment_results["kmeans_labels"] = self.kmeans.labels_.tolist()
         experiment_results["kmeans_centers"] = self.kmeans.cluster_centers_.tolist()
@@ -105,12 +115,13 @@ class Report():
         experiment_results["kmeans_after_pca_running_time"] = compressed_results["kmeans_after_pca_running_time"] = int(
             time.time() * 1000) - start_time
         experiment_results["kmeans_pca_total_running_time"] = compressed_results["kmeans_pca_total_running_time"] = \
-        experiment_results["kmeans_after_pca_running_time"] + \
-        experiment_results["pca_running_time"]
+            experiment_results["kmeans_after_pca_running_time"] + \
+            experiment_results["pca_running_time"]
         clusters = divide_clusters(self.kmeans.labels_.tolist())
-        experiment_results["kmeans_similarity"] = compressed_results["similarity"] = get_clusters_similarity(clusters,
-                                                                                                             k, n)
-        experiment_results["kmeans_cost"] = compressed_results["kmeans_cost"] = self.kmeans.inertia_
+        experiment_results["kmeans_pca_similarity"] = compressed_results[
+            "kmeans_pca_similarity"] = get_clusters_similarity(clusters,
+                                                               k, n)
+        experiment_results["kmeans_pca_cost"] = compressed_results["kmeans_pca_cost"] = self.kmeans.inertia_
         experiment_results["kmeans_pca_labels"] = self.kmeans.labels_.tolist()
         experiment_results["kmeans_pca_centers"] = self.kmeans.cluster_centers_.tolist()
 
@@ -118,7 +129,7 @@ class Report():
         self.store_results(experiment_results)
 
 
-def combine_parameters():
+def do_experiment():
     report = Report(REPORT_FILE, COMPRESSED_REPORT_FILE)
     for n in VALUES_FOR_N:
         for k in VALUES_FOR_K:
@@ -142,21 +153,34 @@ def combine_parameters():
                     report.experiment(data, parameters)
 
 
-def combine_results():
-    with open("experiment_results_compressed4.json", "r") as f:
+def combine_results(file1, file2):
+    with open(file2, "r") as f:
         ex2 = json.load(f)
 
-    with open("experiment_results_compressed.json", "r") as f1:
+    with open(file1, "r") as f1:
         ex1 = json.load(f1)
     for key in ex1.keys():
         ex1[key]["kmeans_running_time"] = convert_time_format(ex1[key]["kmeans_running_time"])
         ex1[key]["pca_running_time"] = convert_time_format(ex1[key]["pca_running_time"])
         ex1[key]["kmeans_after_pca_running_time"] = convert_time_format(ex1[key]["kmeans_after_pca_running_time"])
         ex1[key]["kmeans_pca_total_running_time"] = convert_time_format(ex1[key]["kmeans_pca_total_running_time"])
-    # for key in ex2.keys():
-    #     ex1[key] = ex2[key]
-    with open("experiment_results_compressed.json", "w") as f2:
+    for key in ex2.keys():
+        ex1[key] = ex2[key]
+    with open(file1, "w") as f2:
         json.dump(ex1, f2, indent=4)
+
+
+def reformat_time(file):
+    with open(file, "r") as f1:
+        ex1 = json.load(f1)
+    for key in ex1.keys():
+        ex1[key]["kmeans_running_time"] = convert_time_format(ex1[key]["kmeans_running_time"])
+        ex1[key]["pca_running_time"] = convert_time_format(ex1[key]["pca_running_time"])
+        ex1[key]["kmeans_after_pca_running_time"] = convert_time_format(ex1[key]["kmeans_after_pca_running_time"])
+        ex1[key]["kmeans_pca_total_running_time"] = convert_time_format(ex1[key]["kmeans_pca_total_running_time"])
+    with open(file, "w") as f2:
+        json.dump(ex1, f2, indent=4)
+
 
 def convert_time_format(milliseconds):
     if milliseconds >= 1000:
@@ -170,7 +194,6 @@ def convert_time_format(milliseconds):
             seconds_left = seconds % 60
             return f"{minutes} m {seconds_left} s {milliseconds_left} ms"
     return f"{milliseconds} ms"
-
 
 
 def divide_clusters(clusters):
@@ -197,7 +220,60 @@ def compute_jaccard_similarity(set1, set2):
     return len(intersection_sets) / len(union_sets)
 
 
+def load_experiment_results(file):
+    new_data = []
+    with open(file, "r") as f:
+        data = json.load(f)
+    for key in data.keys():
+        new_data.append(data[key])
+    return data
+
+
+def print_graph(data, type_metric):
+    x = []
+    y = []
+    for key in data.keys():
+        x.append(key)
+        y.append(data[key][type_metric])
+
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=x, y=y, mode='lines+markers'))
+
+    # Aggiungi titoli e etichette
+    fig.update_layout(
+        title='Analysis',
+        xaxis=dict(title='parameters'),
+        yaxis=dict(title=type_metric)
+    )
+
+    # Mostra il grafico
+    fig.show()
+
+
+def main():
+    if len(sys.argv) < 2:
+        print("missing input arguments", sys.stderr)
+        exit(1)
+    if sys.argv[1].lower().find(OperationalMode.DO_EXPERIMENT.value) != -1:
+        np.random.seed(SEED)
+        do_experiment()
+    if sys.argv[1].lower().find(OperationalMode.COMBINE_RESULTS.value) != -1:
+        if len(sys.argv) < 4:
+            print("missing input arguments file1 and file2", sys.stderr)
+            exit(1)
+        combine_results(sys.argv[2], sys.argv[3])
+    if sys.argv[1].lower().find(OperationalMode.REFORMAT_TIME.value) != -1:
+        if len(sys.argv) < 3:
+            print("missing input argument file", sys.stderr)
+            exit(1)
+        reformat_time(sys.argv[2])
+    if sys.argv[1].lower().find(OperationalMode.PRINT_METRIC.value) != -1:
+        if len(sys.argv) < 4:
+            print("missing input arguments file and metric", sys.stderr)
+            exit(1)
+        data = load_experiment_results(sys.argv[2])
+        print_graph(data, sys.argv[3])
+
+
 if __name__ == "__main__":
-    combine_results()
-    # np.random.seed(SEED)
-    # combine_parameters()
+    main()
