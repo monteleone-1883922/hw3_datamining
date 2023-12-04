@@ -14,11 +14,12 @@ VALUES_FOR_N = [1000, 10000, 100000]
 VALUES_FOR_K = [50, 100, 200]
 REPORT_FILE = "experiment_results.json"
 COMPRESSED_REPORT_FILE = "experiment_results_compressed.json"
-COMPONENTS = 3
+COMPONENTS = 0.85
 PRECISION = 16
 SEED = 42
 TOLERANCE = 2e-3
 MAX_ITERATIONS = 10
+
 
 class OperationalMode(Enum):
     """Enum for operational mode"""
@@ -26,6 +27,7 @@ class OperationalMode(Enum):
     COMBINE_RESULTS = "combine"
     REFORMAT_TIME = "time"
     PRINT_METRIC = "print"
+
 
 def generate_dataset(n: int, k: int, d: int, s: float):
     """generate the set of points"""
@@ -97,12 +99,12 @@ class Report():
             result += f"{el[0]}={el[1]}-"
         return result[:-1]
 
-    def experiment(self, data, parameters,extended_report = False):
+    def experiment(self, data, parameters, extended_report=False):
         """Perform the experiment"""
         k = parameters["k"]
         n = parameters["n"]
         correct_clusters = [[j + i for j in range(0, n * k, k)] for i in range(k)]
-        #does the experiment with k-means only
+        # does the experiment with k-means only
         experiment_results = {"parameters": parameters, "n_components": self.pca.n_components}
         start_time = int(time.time() * 1000)
         self.kmeans.fit(data)
@@ -154,7 +156,6 @@ class Report():
         self.store_results_compressed(experiment_results)
 
 
-
 def do_experiment():
     """Perform experiments for various configurations"""
     report = Report(REPORT_FILE, COMPRESSED_REPORT_FILE)
@@ -165,7 +166,7 @@ def do_experiment():
             values_for_d = [k, 100 * k]
             values_for_s = [1 / k, 1 / math.sqrt(k), 0.5]
             for d in values_for_d:
-                report.set_pca(k // COMPONENTS)
+                report.set_pca(int(k / COMPONENTS))
                 for s in values_for_s:
                     parameters = {
                         "n": n,
@@ -174,7 +175,7 @@ def do_experiment():
                         "s": s
                     }
                     print(
-                        f"generating dataset for \nn = {n}\nk = {k}\nd = {d}\ns = {s}\nnum component is {(k + d) // COMPONENTS} ")
+                        f"generating dataset for \nn = {n}\nk = {k}\nd = {d}\ns = {s}\nnum component is {int(k / COMPONENTS)} ")
                     data = generate_dataset(n, k, d, s)
                     print("start experiment")
                     report.experiment(data, parameters)
@@ -290,23 +291,23 @@ def main():
     if len(sys.argv) < 2:
         print("missing input arguments", sys.stderr)
         exit(1)
-    #does the experiment
+    # does the experiment
     if sys.argv[1].lower().find(OperationalMode.DO_EXPERIMENT.value) != -1:
         np.random.seed(SEED)
         do_experiment()
-    #combine results in 2 different result files
+    # combine results in 2 different result files
     if sys.argv[1].lower().find(OperationalMode.COMBINE_RESULTS.value) != -1:
         if len(sys.argv) < 4:
             print("missing input arguments file1 and file2", sys.stderr)
             exit(1)
         combine_results(sys.argv[2], sys.argv[3])
-    #change time format in a result file
+    # change time format in a result file
     if sys.argv[1].lower().find(OperationalMode.REFORMAT_TIME.value) != -1:
         if len(sys.argv) < 3:
             print("missing input argument file", sys.stderr)
             exit(1)
         reformat_time(sys.argv[2])
-    #prints a graph showing the changes of a metric through the different configurations
+    # prints a graph showing the changes of a metric through the different configurations
     if sys.argv[1].lower().find(OperationalMode.PRINT_METRIC.value) != -1:
         if len(sys.argv) < 4:
             print("missing input arguments file and metric", sys.stderr)
