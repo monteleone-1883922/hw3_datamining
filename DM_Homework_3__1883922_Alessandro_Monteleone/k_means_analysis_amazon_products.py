@@ -1,3 +1,5 @@
+import time
+
 from transformers import AutoTokenizer
 import pandas as pd
 import plotly.graph_objs as go
@@ -20,7 +22,6 @@ SPECIAL_CHARACTERS_FILE = "special_characters.json"
 class SentencePreprocessing():
 
     def __init__(self, stopwords_file_path: str, special_characters_file_path: str):
-
 
         with open(stopwords_file_path, 'r') as stopwords_file:
             data = json.load(stopwords_file)
@@ -47,7 +48,6 @@ class SentencePreprocessing():
         tokenized = word_tokenize(sentence)
         return self.remove_stopwords(tokenized) if remove_stopwords else self.remove_special_characters(
             tokenized)
-
 
 
 def load_raw_data():
@@ -77,13 +77,21 @@ def retype_dataframe(df: pd.DataFrame) -> None:
     df["prime"] = df["prime"].astype(bool)
 
 
-def produce_elbow_curve(data, num_means):
+def produce_elbow_curve(data, num_means, save_runningtimes=False):
     result = []
+    runningtimes = []
     for i in range(1, num_means + 1):
-        print_progress_bar(i/num_means)
+        print_progress_bar(i / num_means)
         kmeans = KMeans(init='k-means++', n_clusters=i, random_state=SEED, tol=TOLLERANCE, max_iter=MAX_ITERATIONS)
+        start_time = int(time.time() * 1000)
         kmeans.fit(data)
+        runningtime = int(time.time() * 1000) - start_time
+        if save_runningtimes:
+            runningtimes.append(runningtime)
         result.append(kmeans.inertia_)
+
+    if save_runningtimes:
+        return result, runningtimes
     return result
 
 
@@ -102,14 +110,29 @@ def print_elbow_curve(variances, num_means):
     # Mostra il grafico
     fig.show()
 
+def print_runningtimes(runningtimes,num_means):
+    # Crea il grafico della curva dell'Elbow con Plotly
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=list(range(1, num_means + 1)), y=runningtimes, mode='lines+markers'))
+
+    # Aggiungi titoli e etichette
+    fig.update_layout(
+        title='Runningtimes wrt number of clusters',
+        xaxis=dict(title='Number of Clusters (k)'),
+        yaxis=dict(title='Runningtimes')
+    )
+
+    # Mostra il grafico
+    fig.show()
+
 
 def add_padding(data):
     max_len = len(max(data, key=lambda x: len(x)))
     for i in range(len(data)):
         data[i] = data[i] + [0 for _ in range(max_len - len(data[i]))]
 
-def convert_raw_data_into_numbers(data):
 
+def convert_raw_data_into_numbers(data):
     words_index = {}
     idx = 0
     converted_data = []
@@ -119,9 +142,8 @@ def convert_raw_data_into_numbers(data):
         words = word_tokenize(el1)
         converted_words = []
 
-
         for word in words:
-            id_word = words_index.get(word,-1)
+            id_word = words_index.get(word, -1)
             if id_word == -1:
                 converted_words.append(idx)
                 words_index[word] = idx
@@ -130,10 +152,11 @@ def convert_raw_data_into_numbers(data):
                 converted_words.append(id_word)
         converted_data.append(converted_words)
 
-    adjust_representations(converted_data,idx)
+    adjust_representations(converted_data, idx)
     return converted_data
 
-def adjust_and_convert_data(data,preprocessor):
+
+def adjust_and_convert_data(data, preprocessor):
     words_index = {}
     idx = 0
     converted_data = []
@@ -143,19 +166,19 @@ def adjust_and_convert_data(data,preprocessor):
         converted_words = {}
 
         for word in words:
-            id_word = words_index.get(word, (-1,-1))
+            id_word = words_index.get(word, (-1, -1))
             if id_word[0] == -1:
-                converted_words[word] = (idx,1)
-                words_index[word] = (idx,1)
+                converted_words[word] = (idx, 1)
+                words_index[word] = (idx, 1)
                 idx += 1
             else:
-                old_value = converted_words.get(word,(id_word[0],0))
-                converted_words[word] = (id_word[0],old_value[1] + 1)
+                old_value = converted_words.get(word, (id_word[0], 0))
+                converted_words[word] = (id_word[0], old_value[1] + 1)
                 if old_value[1] == 0:
                     words_index[word] = (id_word[0], words_index[word][1] + 1)
 
         converted_data.append(converted_words)
-    return adjust_and_apply_tfidf(converted_data,words_index,idx)
+    return adjust_and_apply_tfidf(converted_data, words_index, idx)
 
 
 def adjust_representations(representation, max_len):
@@ -172,17 +195,9 @@ def adjust_and_apply_tfidf(data, words_index, max_len):
     for el in data:
         new_representation = [0 for _ in range(max_len)]
         for item in el.items():
-            new_representation[item[1][0]] = item[1][1] * log2(n/words_index[item[0]][1])
+            new_representation[item[1][0]] = item[1][1] * log2(n / words_index[item[0]][1])
         new_data.append(new_representation)
     return new_data
-
-
-
-
-
-
-
-
 
 
 def process_raw_data():
@@ -201,11 +216,13 @@ def replace_if_null(value, replace):
         return replace
     return value
 
+
 def print_progress_bar(percentuale, lunghezza_barra=20):
     blocchi_compilati = int(lunghezza_barra * percentuale)
-    barra = "[" + "=" * (blocchi_compilati-1) + ">" + " " * (lunghezza_barra - blocchi_compilati) + "]"
+    barra = "[" + "=" * (blocchi_compilati - 1) + ">" + " " * (lunghezza_barra - blocchi_compilati) + "]"
     sys.stdout.write(f"\r{barra} {percentuale * 100:.2f}% completo")
     sys.stdout.flush()
+
 
 def apply_feature_engineering():
     warnings.simplefilter(action='ignore', category=FutureWarning)
@@ -214,11 +231,10 @@ def apply_feature_engineering():
     result_data = []
     data["description"] = adjust_and_convert_data(data["description"].tolist(), preprocessor)
     for index, row in data.iterrows():
-
         result_data.append(row["description"] + [replace_if_null(row["price"], 0),
-                                                  replace_if_null(row["prime"], 0),
-                                                  replace_if_null(row["stars"], 0),
-                                                  replace_if_null(row["num_reviews"], 0)])
+                                                 replace_if_null(row["prime"], 0),
+                                                 replace_if_null(row["stars"], 0),
+                                                 replace_if_null(row["num_reviews"], 0)])
 
     # add_padding(result_data)
     variances = produce_elbow_curve(result_data, MAX_MEANS)
