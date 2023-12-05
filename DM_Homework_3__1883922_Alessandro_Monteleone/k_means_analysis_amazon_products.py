@@ -1,4 +1,5 @@
 import time
+from enum import Enum
 
 from transformers import AutoTokenizer
 import pandas as pd
@@ -18,6 +19,14 @@ MAX_ITERATIONS = 10
 MAX_MEANS = 25
 STOPWORDS_FILE = "stopwords_list_it.json"
 SPECIAL_CHARACTERS_FILE = "special_characters.json"
+K = 10
+T = 35
+
+
+class Representation(Enum):
+    """Enum for representation of the document"""
+    TFIDF = "tfidf"
+    MINWISEHASHING = "minwisehashing"
 
 
 class SentencePreprocessing():
@@ -254,6 +263,8 @@ def hashFamily(i):
             x = x.encode('utf-8')
         elif type(x) is list:
             x = b"".join(x)
+        elif type(x) is int:
+            x = str(x).encode('utf-8')
         return cityhash.CityHash32(x + salt)
 
     return hashMember
@@ -279,22 +290,29 @@ class MinwiseHashing():
         return hash(el)
 
 
-def minwisehashing_representation(data,shingling,minwisehashing):
+def minwisehashing_representation(data, shingling, minwisehashing, preprocessor):
     new_representation = []
     for el in data:
-        shigling_format = shingling.get_shingling(el)
+        preprocessed_el = " ".join(preprocessor.preprocess(el))
+        shigling_format = shingling.get_shingling(preprocessed_el)
         minwisehashing_format = minwisehashing.get_minwise_hashing(shigling_format)
         new_representation.append(minwisehashing_format)
     return new_representation
 
 
-
-def apply_feature_engineering(normalize=False, centralize=False):
+def apply_feature_engineering(representation, normalize=False, centralize=False):
     warnings.simplefilter(action='ignore', category=FutureWarning)
     preprocessor = SentencePreprocessing(STOPWORDS_FILE, SPECIAL_CHARACTERS_FILE)
     data = load_and_retype_data()
     result_data = []
-    data["description"] = adjust_and_convert_data(data["description"].tolist(), preprocessor)
+    if representation == Representation.TFIDF:
+        data["description"] = adjust_and_convert_data(data["description"].tolist(), preprocessor)
+    elif representation == Representation.MINWISEHASHING:
+        shingling_hash = hashFamily(1)
+        shingling = Shingling(shingling_hash, K)
+        minwisehash_functions = [hashFamily(i) for i in range(T)]
+        minwisehashing = MinwiseHashing(minwisehash_functions, T)
+        data["description"] = minwisehashing_representation(data["description"].tolist(), shingling, minwisehashing, preprocessor)
     central_vec = None
     for index, row in data.iterrows():
         vec = np.array(row["description"] + [replace_if_null(row["price"], 0),
@@ -303,7 +321,7 @@ def apply_feature_engineering(normalize=False, centralize=False):
                                              replace_if_null(row["num_reviews"], 0)])
         result_data.append(vec)
         central_vec = vec / data.shape[0] if central_vec is None else central_vec + vec / data.shape[0]
-    #normalize
+    # normalize
     if normalize:
         matrix_norma = np.linalg.norm(np.array(result_data))
         result_data = np.array(result_data) / matrix_norma
@@ -319,4 +337,4 @@ def apply_feature_engineering(normalize=False, centralize=False):
 if __name__ == "__main__":
     np.random.seed(SEED)
     # process_raw_data()
-    apply_feature_engineering(normalize=True)
+    apply_feature_engineering(Representation.MINWISEHASHING, normalize=True)
