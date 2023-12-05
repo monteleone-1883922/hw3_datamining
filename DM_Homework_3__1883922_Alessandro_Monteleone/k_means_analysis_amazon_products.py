@@ -11,6 +11,7 @@ from nltk.tokenize import word_tokenize
 from math import log2
 import sys
 import cityhash
+from plotly.subplots import make_subplots
 
 DATA_FILE_PATH = "amazon_products_gpu.tsv"
 SEED = 42
@@ -115,6 +116,23 @@ def print_elbow_curve(variances, num_means):
         title='Elbow Curve',
         xaxis=dict(title='Number of Clusters (k)'),
         yaxis=dict(title='Variance Intra-Cluster')
+    )
+
+    # Mostra il grafico
+    fig.show()
+
+def print_runningtimes_and_elbow_curve(variances,runningtimes, num_means, title ='Analysis Graphs'):
+    fig = make_subplots(rows=2, cols=1)
+    fig.add_trace(go.Scatter(x=list(range(1, num_means + 1)), y=variances, mode='lines+markers', name = 'Elbow Curve'), row=1, col=1)
+    fig.add_trace(go.Scatter(x=list(range(1, num_means + 1)), y=runningtimes, mode='lines+markers',name='Running Times Graph'), row=2, col=1)
+
+    # Aggiungi titoli e etichette
+    fig.update_layout(
+        title=title,
+        xaxis=dict(title='Number of Clusters (k)'),
+        yaxis=dict(title='Variance Intra-Cluster'),
+        xaxis2=dict(title='Number of Clusters (k)'),
+        yaxis2=dict(title='Running Times')
     )
 
     # Mostra il grafico
@@ -303,6 +321,7 @@ def minwisehashing_representation(data, shingling, minwisehashing, preprocessor)
 def apply_feature_engineering(representation, normalize=False, centralize=False):
     warnings.simplefilter(action='ignore', category=FutureWarning)
     preprocessor = SentencePreprocessing(STOPWORDS_FILE, SPECIAL_CHARACTERS_FILE)
+    start_time = int(time.time() * 1000)
     data = load_and_retype_data()
     result_data = []
     if representation == Representation.TFIDF:
@@ -330,11 +349,12 @@ def apply_feature_engineering(representation, normalize=False, centralize=False)
     if centralize:
         for i in range(len(result_data)):
             result_data[i] = result_data[i] - central_vec
-    variances = produce_elbow_curve(result_data, MAX_MEANS)
-    print_elbow_curve(variances, MAX_MEANS)
+    end_time = int(time.time() * 1000) - start_time
+    variances,runningtimes = produce_elbow_curve(result_data, MAX_MEANS,save_runningtimes=True)
+    print_runningtimes_and_elbow_curve(variances,runningtimes, MAX_MEANS)
 
 
 if __name__ == "__main__":
     np.random.seed(SEED)
     # process_raw_data()
-    apply_feature_engineering(Representation.MINWISEHASHING, normalize=True)
+    apply_feature_engineering(Representation.TFIDF, normalize=True)
