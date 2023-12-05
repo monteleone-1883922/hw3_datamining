@@ -9,6 +9,7 @@ import warnings, json
 from nltk.tokenize import word_tokenize
 from math import log2
 import sys
+import cityhash
 
 DATA_FILE_PATH = "amazon_products_gpu.tsv"
 SEED = 42
@@ -110,7 +111,8 @@ def print_elbow_curve(variances, num_means):
     # Mostra il grafico
     fig.show()
 
-def print_runningtimes(runningtimes,num_means):
+
+def print_runningtimes(runningtimes, num_means):
     # Crea il grafico della curva dell'Elbow con Plotly
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=list(range(1, num_means + 1)), y=runningtimes, mode='lines+markers'))
@@ -224,24 +226,97 @@ def print_progress_bar(percentuale, lunghezza_barra=20):
     sys.stdout.flush()
 
 
-def apply_feature_engineering():
+class Shingling():
+
+    def __init__(self, hash_function, k: int):
+        self.hash = hash_function
+        self.k = k
+
+    def get_shingling(self, document):
+        set_of_shinglings = []
+
+        for i in range(len(document) - self.k + 1):
+            word = document[i: i + self.k]
+            set_of_shinglings.append(self.hash(word))
+        return set_of_shinglings
+
+
+def hashFamily(i):
+    resultSize = 8
+    # how many bytes we want back
+    maxLen = 20
+    # how long can our i be (in decimal)
+    salt = str(i).zfill(maxLen)[-maxLen:]
+    salt = salt.encode('utf-8')
+
+    def hashMember(x):
+        if type(x) is str:
+            x = x.encode('utf-8')
+        elif type(x) is list:
+            x = b"".join(x)
+        return cityhash.CityHash32(x + salt)
+
+    return hashMember
+
+
+class MinwiseHashing():
+
+    def __init__(self, hash_functions, t: int):
+        self.hashes = hash_functions
+        self.t = t
+
+    def get_minwise_hashing(self, elements_set):
+        set_signature = []
+        for i in range(self.t):
+            min_hash = None
+            for el in elements_set:
+                min_hash = min(min_hash, self.apply_hash(el, i)) if not min_hash is None else self.apply_hash(el, i)
+            set_signature.append(min_hash)
+        return set_signature
+
+    def apply_hash(self, el, i):
+        hash = self.hashes[i % len(self.hashes)]
+        return hash(el)
+
+
+def minwisehashing_representation(data,shingling,minwisehashing):
+    new_representation = []
+    for el in data:
+        shigling_format = shingling.get_shingling(el)
+        minwisehashing_format = minwisehashing.get_minwise_hashing(shigling_format)
+        new_representation.append(minwisehashing_format)
+    return new_representation
+
+
+
+def apply_feature_engineering(normalize=False, centralize=False):
     warnings.simplefilter(action='ignore', category=FutureWarning)
     preprocessor = SentencePreprocessing(STOPWORDS_FILE, SPECIAL_CHARACTERS_FILE)
     data = load_and_retype_data()
     result_data = []
     data["description"] = adjust_and_convert_data(data["description"].tolist(), preprocessor)
+    central_vec = None
     for index, row in data.iterrows():
-        result_data.append(row["description"] + [replace_if_null(row["price"], 0),
-                                                 replace_if_null(row["prime"], 0),
-                                                 replace_if_null(row["stars"], 0),
-                                                 replace_if_null(row["num_reviews"], 0)])
-
-    # add_padding(result_data)
+        vec = np.array(row["description"] + [replace_if_null(row["price"], 0),
+                                             replace_if_null(row["prime"], 0),
+                                             replace_if_null(row["stars"], 0),
+                                             replace_if_null(row["num_reviews"], 0)])
+        result_data.append(vec)
+        central_vec = vec / data.shape[0] if central_vec is None else central_vec + vec / data.shape[0]
+    #normalize
+    if normalize:
+        matrix_norma = np.linalg.norm(np.array(result_data))
+        result_data = np.array(result_data) / matrix_norma
+        central_vec = central_vec / matrix_norma
+    # centralize
+    if centralize:
+        for i in range(len(result_data)):
+            result_data[i] = result_data[i] - central_vec
     variances = produce_elbow_curve(result_data, MAX_MEANS)
     print_elbow_curve(variances, MAX_MEANS)
 
 
 if __name__ == "__main__":
     np.random.seed(SEED)
-    process_raw_data()
-    # apply_feature_engineering()
+    # process_raw_data()
+    apply_feature_engineering(normalize=True)

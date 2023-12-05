@@ -12,8 +12,8 @@ from enum import Enum
 # Experiment configurations
 VALUES_FOR_N = [1000, 10000, 100000]
 VALUES_FOR_K = [50, 100, 200]
+REPORT_FILE_EXTENDED = "experiment_results_extended.json"
 REPORT_FILE = "experiment_results.json"
-COMPRESSED_REPORT_FILE = "experiment_results_compressed.json"
 COMPONENTS = 0.85
 PRECISION = 16
 SEED = 42
@@ -158,7 +158,7 @@ class Report():
 
 def do_experiment():
     """Perform experiments for various configurations"""
-    report = Report(REPORT_FILE, COMPRESSED_REPORT_FILE)
+    report = Report(REPORT_FILE_EXTENDED, REPORT_FILE)
     for n in VALUES_FOR_N:
         for k in VALUES_FOR_K:
             report.set_kmeans(k)
@@ -188,11 +188,6 @@ def combine_results(file1, file2):
 
     with open(file1, "r") as f1:
         ex1 = json.load(f1)
-    for key in ex1.keys():
-        ex1[key]["kmeans_running_time"] = convert_time_format(ex1[key]["kmeans_running_time"])
-        ex1[key]["pca_running_time"] = convert_time_format(ex1[key]["pca_running_time"])
-        ex1[key]["kmeans_after_pca_running_time"] = convert_time_format(ex1[key]["kmeans_after_pca_running_time"])
-        ex1[key]["kmeans_pca_total_running_time"] = convert_time_format(ex1[key]["kmeans_pca_total_running_time"])
     for key in ex2.keys():
         ex1[key] = ex2[key]
     with open(file1, "w") as f2:
