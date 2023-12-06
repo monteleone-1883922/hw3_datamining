@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Index for visualization</title>
+
+</head>
+<body>
+<main>
+    <h1  style="text-align:center;">Visualization of Clusters</h1>
+
+    <!-- Il tag form delimita il modulo -->
+    <form action="/visualize_cluster" method="POST">
+        <!-- Label e campo di input per la tecnica -->
+        <label for="technique">Technique:</label>
+        <input type="text" id="technique" name="technique" required>
+        <br>
+
+        <!-- Label e campo di input per il numero di cluster -->
+        <label for="clusters">Number of Clusters:</label>
+        <input type="number" id="clusters" name="clusters" required>
+        <br>
+
+        <!-- Label e campo di input per il cluster -->
+        <label for="cluster">Cluster to visualize:</label>
+        <input type="number" id="cluster" name="cluster" required>
+        <br>
+
+        <!-- Bottone di invio del modulo -->
+        <button type="submit">Visualize Cluster</button>
+    </form>
+
+
+
+</main>
+
+</body>
+</html>
