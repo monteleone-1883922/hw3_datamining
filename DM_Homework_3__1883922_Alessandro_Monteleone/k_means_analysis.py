@@ -259,22 +259,24 @@ def load_experiment_results(file):
     return data
 
 
-def print_graph(data, type_metric):
+def print_graph(data, type_metrics,names,metric):
     """Print a graph based on experiment results"""
     x = []
-    y = []
+    y = {}
     for key in data.keys():
         x.append(key)
-        y.append(data[key][type_metric])
+        for i in range(len(type_metrics)):
+            y[type_metrics[i]] = y.get(type_metrics[i],[]) + [data[key][type_metrics[i]]]
 
     fig = go.Figure()
-    fig.add_trace(go.Scatter(x=x, y=y, mode='lines+markers'))
+    for i,key in enumerate(y.keys()):
+        fig.add_trace(go.Scatter(x=x, y=y[key], mode='lines+markers',name=names[i]))
 
     # Add titles and labels
     fig.update_layout(
         title='Analysis',
         xaxis=dict(title='parameters'),
-        yaxis=dict(title=type_metric)
+        yaxis=dict(title=metric)
     )
 
     # Show the graph
@@ -304,11 +306,11 @@ def main():
         reformat_time(sys.argv[2])
     # prints a graph showing the changes of a metric through the different configurations
     if sys.argv[1].lower().find(OperationalMode.PRINT_METRIC.value) != -1:
-        if len(sys.argv) < 4:
+        if len(sys.argv) < 6:
             print("missing input arguments file and metric", sys.stderr)
             exit(1)
         data = load_experiment_results(sys.argv[2])
-        print_graph(data, sys.argv[3])
+        print_graph(data, sys.argv[3].split(","),sys.argv[4].split(","),sys.argv[5])
 
 
 if __name__ == "__main__":
