@@ -22,10 +22,11 @@ T = 35
 COMPONENTS = 3
 
 
-def print_elbow_curve(variances, num_means):
+def print_elbow_curve(variances, num_means, names=[]):
     # Crea il grafico della curva dell'Elbow con Plotly
     fig = go.Figure()
-    fig.add_trace(go.Scatter(x=list(range(1, num_means + 1)), y=variances, mode='lines+markers'))
+    for i in range(len(variances)):
+        fig.add_trace(go.Scatter(x=list(range(1, num_means + 1)), y=variances[i], mode='lines+markers',name='Elbow Curve ' + str(i) if names == [] else names[i]))
 
     # Aggiungi titoli e etichette
     fig.update_layout(
@@ -43,9 +44,9 @@ def print_runningtimes_and_elbow_curve(variances, runningtimes, num_means, title
     means = [i for i in range(1, num_means + 1)]
     for i in range(len(variances)):
         fig.add_trace(go.Scatter(x=means, y=variances[i], mode='lines+markers',
-                                 name='Elbow Curve' + str(i) if names == [] else names[i][0]), row=1, col=1)
+                                 name='Elbow Curve ' + str(i) if names == [] else names[i][0]), row=1, col=1)
         fig.add_trace(go.Scatter(x=means, y=runningtimes[i], mode='lines+markers',
-                                 name='Running Times Graph' + str(i) if names == [] else names[i][1]), row=2, col=1)
+                                 name='Running Times ' + str(i) if names == [] else names[i][1]), row=2, col=1)
 
     # Aggiungi titoli e etichette
     fig.update_layout(
@@ -60,10 +61,11 @@ def print_runningtimes_and_elbow_curve(variances, runningtimes, num_means, title
     fig.show()
 
 
-def print_runningtimes(runningtimes, num_means):
+def print_runningtimes(runningtimes, num_means, names=[]):
     # Crea il grafico della curva dell'Elbow con Plotly
     fig = go.Figure()
-    fig.add_trace(go.Scatter(x=list(range(1, num_means + 1)), y=runningtimes, mode='lines+markers'))
+    for i in range(len(runningtimes)):
+        fig.add_trace(go.Scatter(x=list(range(1, num_means + 1)), y=runningtimes[i], mode='lines+markers',name='running time ' + str(i) if names == [] else names[i]))
 
     # Aggiungi titoli e etichette
     fig.update_layout(

@@ -1,3 +1,4 @@
+import sys
 import time
 from sklearn.cluster import KMeans
 import warnings
@@ -6,9 +7,10 @@ from sklearn.decomposition import PCA
 from utils import *
 
 
-def perform_clusterization(data, num_means, clusterization= False, cluster=-1):
+def perform_clusterization(data, num_means, clusterization=False, cluster=-1):
     if cluster > 0:
-        kmeans = KMeans(init='k-means++', n_clusters=cluster, random_state=SEED, tol=TOLLERANCE, max_iter=MAX_ITERATIONS)
+        kmeans = KMeans(init='k-means++', n_clusters=cluster, random_state=SEED, tol=TOLLERANCE,
+                        max_iter=MAX_ITERATIONS)
         kmeans.fit(data)
         return kmeans.labels_.tolist()
     result = []
@@ -26,8 +28,7 @@ def perform_clusterization(data, num_means, clusterization= False, cluster=-1):
         runningtimes.append(runningtime)
         result.append(kmeans.inertia_)
 
-
-    return result,runningtimes,clusterization_list
+    return result, runningtimes, clusterization_list
 
 
 def convert_raw_data_into_numbers(data):
@@ -53,12 +54,13 @@ def convert_raw_data_into_numbers(data):
     add_padding(converted_data, idx)
     return converted_data
 
+
 def add_padding(data, max_len):
-    for i in range(len(data)) :
-        data[i] = data[i] + [0 for _ in range(max_len-len(data[i]))]
+    for i in range(len(data)):
+        data[i] = data[i] + [0 for _ in range(max_len - len(data[i]))]
 
 
-def one_hot_encodings(data,preprocessor):
+def one_hot_encodings(data, preprocessor):
     words_index = {}
     idx = 0
     converted_data = []
@@ -78,7 +80,6 @@ def one_hot_encodings(data,preprocessor):
 
     adjust_representations(converted_data, idx)
     return converted_data
-
 
 
 def adjust_and_convert_data(data, preprocessor):
@@ -125,7 +126,7 @@ def adjust_and_apply_tfidf(data, words_index, max_len):
     return new_data
 
 
-def process_raw_data(data=None,normalize=False,clusterization_only=False,cluster=-1):
+def process_raw_data(data=None, normalize=False, clusterization_only=False, cluster=-1):
     # Ignora i FutureWarning
     warnings.simplefilter(action='ignore', category=FutureWarning)
     if data is None:
@@ -135,8 +136,8 @@ def process_raw_data(data=None,normalize=False,clusterization_only=False,cluster
         matrix_norma = np.linalg.norm(np.array(data))
         data = np.array(data) / matrix_norma
     if cluster > 0:
-        return perform_clusterization(data, MAX_MEANS,cluster=cluster)
-    variances, runningtimes,clusters = perform_clusterization(data, MAX_MEANS)
+        return perform_clusterization(data, MAX_MEANS, cluster=cluster)
+    variances, runningtimes, clusters = perform_clusterization(data, MAX_MEANS)
     if clusterization_only:
         return clusters
     return variances, runningtimes
@@ -152,7 +153,8 @@ def minwisehashing_representation(data, shingling, minwisehashing, preprocessor)
     return new_representation
 
 
-def apply_feature_engineering(representation,data=None,clusterization_only=False, normalize=False, centralize=False, pca=False, components=COMPONENTS,cluster=-1,additional_fields=[]):
+def apply_feature_engineering(representation, data=None, clusterization_only=False, normalize=False, centralize=False,
+                              pca=False, components=COMPONENTS, cluster=-1, additional_fields=[]):
     warnings.simplefilter(action='ignore', category=FutureWarning)
     preprocessor = SentencePreprocessing(STOPWORDS_FILE, SPECIAL_CHARACTERS_FILE)
     start_time = int(time.time() * 1000)
@@ -179,12 +181,12 @@ def apply_feature_engineering(representation,data=None,clusterization_only=False
                                              replace_if_null(row["stars"], 0),
                                              replace_if_null(row["num_reviews"], 0)"""
         result_data.append(vec)
-        #central_vec = vec / data.shape[0] if central_vec is None else central_vec + vec / data.shape[0]
+        # central_vec = vec / data.shape[0] if central_vec is None else central_vec + vec / data.shape[0]
     # normalize
     if normalize:
         matrix_norma = np.linalg.norm(np.array(result_data))
         result_data = np.array(result_data) / matrix_norma
-        #central_vec = central_vec / matrix_norma
+        # central_vec = central_vec / matrix_norma
     # centralize
     # if centralize:
     #     for i in range(len(result_data)):
@@ -196,28 +198,87 @@ def apply_feature_engineering(representation,data=None,clusterization_only=False
         result_data = pca_obj.transform(result_data)
 
     if cluster > 0:
-        return perform_clusterization(result_data, MAX_MEANS,cluster=cluster)
+        return perform_clusterization(result_data, MAX_MEANS, cluster=cluster)
     variances, runningtimes, clusters = perform_clusterization(result_data, MAX_MEANS)
     if clusterization_only:
         return clusters
     return variances, runningtimes
 
 
-if __name__ == "__main__":
+def main():
+    if len(sys.argv) < 4:
+        print(
+            "arguments missing, you have to specify what to plot (running times or elbow curve or both), what techniques to use and the max number of means",
+            sys.stderr)
+        exit(1)
     np.random.seed(SEED)
-    tfidf_variances, tfidf_runningtimes = apply_feature_engineering(Representation.TFIDF, normalize=True,additional_fields=["price","prime","stars","num_reviews"])
-    minwisehash_variances, minwisehash_runningtimes = apply_feature_engineering(Representation.MINWISEHASHING,
-                                                                                normalize=True,additional_fields=["price","prime","stars","num_reviews"])
-    tfidf_pca_variances, tfidf_pca_runningtimes = apply_feature_engineering(Representation.TFIDF, normalize=True,
-                                                                            pca=True, components=2,additional_fields=["price","prime","stars","num_reviews"])
-    raw_variances, raw_runningtimes = process_raw_data(normalize=True)
-    one_hot_variances,one_hot_runningtimes = apply_feature_engineering(Representation.ONE_HOT_ENCODING,
-                                                                                normalize=True,additional_fields=["price","prime","stars","num_reviews"])
-    print_runningtimes_and_elbow_curve([tfidf_variances, tfidf_pca_variances, minwisehash_variances, raw_variances,one_hot_variances],
-                                       [tfidf_runningtimes, tfidf_pca_runningtimes, minwisehash_runningtimes,
-                                        raw_runningtimes,one_hot_runningtimes], MAX_MEANS,
-                                       names=[("tfidf variance", "tfidf running time"),
-                                              ("tfidf + PCA variance", "tfidf + PCA running time"),
-                                              ("minwisehashing variance", "minwisehashing running time"),
-                                              ("raw data variance", "raw data runningtime"),
-                                              ("one hot encoding variance", "one hot encoding runningtime")])
+    raw_techniques = sys.argv[2].split(",")
+    techniques = []
+
+    for i in range(len(raw_techniques)):
+        normalize = raw_techniques[i].find("normalize") != -1
+        if raw_techniques[i].find(Representation.RAW.value) != -1:
+            techniques.append((Representation.RAW, normalize, None))
+
+        else:
+            pca = raw_techniques[i].find("pca") != -1
+            if raw_techniques[i].find(Representation.TFIDF.value) != -1:
+                techniques.append((Representation.TFIDF, normalize, pca))
+            elif raw_techniques[i].find(Representation.MINWISEHASHING.value) != -1:
+                techniques.append((Representation.MINWISEHASHING, normalize, pca))
+            elif raw_techniques[i].find(Representation.ONE_HOT_ENCODING.value) != -1:
+                techniques.append((Representation.ONE_HOT_ENCODING, normalize, pca))
+            else:
+                print("technique not found", sys.stderr)
+                exit(1)
+
+    variances = []
+    running_times = []
+    names = []
+    if sys.argv[1].find("elbow") != -1 and sys.argv[1].find("time") != -1:
+
+        for technique in techniques:
+            if technique[0] == Representation.RAW:
+                raw_variances, raw_runningtimes = process_raw_data(normalize=technique[1])
+                variances.append(raw_variances)
+                running_times.append(raw_runningtimes)
+                names.append(("raw data variance", "raw data running time"))
+            else:
+                feature_variances, feature_runningtimes = apply_feature_engineering(technique[0], normalize=technique[1],
+                                                                                    pca=technique[2])
+                variances.append(feature_variances)
+                running_times.append(feature_runningtimes)
+                names.append((technique[0].name.lower() + " variance", technique[0].name.lower() + " running time"))
+        print_runningtimes_and_elbow_curve(variances, running_times, int(sys.argv[3]), names=names)
+
+    elif sys.argv[1].find("elbow") != -1:
+        for technique in techniques:
+            if technique[0] == Representation.RAW:
+                raw_variances, raw_runningtimes = process_raw_data(normalize=technique[1])
+                variances.append(raw_variances)
+                names.append("raw data variance")
+            else:
+                feature_variances, feature_runningtimes = apply_feature_engineering(technique, normalize=technique[1],
+                                                                                    pca=technique[2])
+                variances.append(feature_variances)
+                names.append(technique[0].name.lower() + " variance")
+        print_elbow_curve(variances, int(sys.argv[3]), names=names)
+
+
+    elif sys.argv[1].find("time") != -1:
+        for technique in techniques:
+            if technique[0] == Representation.RAW:
+                raw_variances, raw_runningtimes = process_raw_data(normalize=technique[1])
+                running_times.append(raw_runningtimes)
+                names.append("raw data running time")
+            else:
+                feature_variances, feature_runningtimes = apply_feature_engineering(technique, normalize=technique[1],
+                                                                                    pca=technique[2])
+                running_times.append(feature_runningtimes)
+                names.append(technique[0].name.lower() + " running time")
+        print_runningtimes(running_times, int(sys.argv[3]), names=names)
+
+
+if __name__ == "__main__":
+    main()
+
