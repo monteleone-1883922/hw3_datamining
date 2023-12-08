@@ -8,6 +8,7 @@ from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 import sys
 from enum import Enum
+from utils import time_in_ms
 
 # Experiment configurations
 VALUES_FOR_N = [1000, 10000, 100000]
@@ -259,18 +260,21 @@ def load_experiment_results(file):
     return data
 
 
-def print_graph(data, type_metrics,names,metric):
+def print_graph(data, type_metrics, names, metric):
     """Print a graph based on experiment results"""
     x = []
     y = {}
+    change_format_time = False
+    if (type_metrics[0].find("time")!= -1):
+        change_format_time = True
     for key in data.keys():
         x.append(key)
         for i in range(len(type_metrics)):
-            y[type_metrics[i]] = y.get(type_metrics[i],[]) + [data[key][type_metrics[i]]]
+            y[type_metrics[i]] = y.get(type_metrics[i], []) + [time_in_ms(data[key][type_metrics[i]]) if change_format_time else data[key][type_metrics[i]]]
 
     fig = go.Figure()
-    for i,key in enumerate(y.keys()):
-        fig.add_trace(go.Scatter(x=x, y=y[key], mode='lines+markers',name=names[i]))
+    for i, key in enumerate(y.keys()):
+        fig.add_trace(go.Scatter(x=x, y=y[key], mode='lines+markers', name=names[i]))
 
     # Add titles and labels
     fig.update_layout(
@@ -310,7 +314,7 @@ def main():
             print("missing input arguments file and metric", sys.stderr)
             exit(1)
         data = load_experiment_results(sys.argv[2])
-        print_graph(data, sys.argv[3].split(","),sys.argv[4].split(","),sys.argv[5])
+        print_graph(data, sys.argv[3].split(","), sys.argv[4].split(","), sys.argv[5])
 
 
 if __name__ == "__main__":
