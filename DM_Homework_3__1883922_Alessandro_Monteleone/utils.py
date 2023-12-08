@@ -8,16 +8,18 @@ import cityhash
 from plotly.subplots import make_subplots
 import json
 import numpy as np
+import re
 
 DATA_FILE_PATH = "amazon_products_gpu.tsv"
 SEED = 42
 TOLLERANCE = 2e-3
 MAX_ITERATIONS = 10
-MAX_MEANS = 25
+MAX_MEANS = 20
 STOPWORDS_FILE = "stopwords_list_it.json"
 SPECIAL_CHARACTERS_FILE = "special_characters.json"
 K = 10
 T = 35
+COMPONENTS = 3
 
 
 def print_elbow_curve(variances, num_means):
@@ -156,6 +158,29 @@ def load_and_retype_data() -> pd.DataFrame:
     retype_dataframe(data)
     return data
 
+def time_in_ms(time_format):
+    # Definisci il pattern regex per estrarre minuti, secondi e millisecondi
+    pattern = re.compile(r'(?:(\d+)\s*m\s*)?(?:(\d+)\s*s\s*)?(\d+)\s*ms')
+
+    # Cerca il pattern nel formato di tempo fornito
+    match = pattern.match(time_format)
+
+    if match:
+        # Estrai i valori di minuti, secondi e millisecondi, gestendo i valori opzionali
+        minuti = int(match.group(1)) if match.group(1) else 0
+        secondi = int(match.group(2)) if match.group(2) else 0
+        millisecondi = int(match.group(3))
+
+        # Calcola il tempo totale in millisecondi
+        tempo_totale_in_millisecondi = (minuti * 60 + secondi) * 1000 + millisecondi
+
+        return tempo_totale_in_millisecondi
+    else:
+        # Restituisci un messaggio di errore se il formato non è valido
+        raise ValueError("Il formato del tempo non è valido. Utilizzare il formato 'm s ms'.")
+
+
+
 
 def retype_dataframe(df: pd.DataFrame) -> None:
     df["price"] = df["price"].apply(lambda x: x.replace(".", "").replace(",", ".") if pd.notna(x) else x)
@@ -174,6 +199,7 @@ class Representation(Enum):
     TFIDF = "tfidf"
     MINWISEHASHING = "minwisehashing"
     RAW = "raw"
+    ONE_HOT_ENCODING = "hot"
 
 
 class SentencePreprocessing():
