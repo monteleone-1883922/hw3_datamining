@@ -1,1 +1,1 @@
-pip install numpy scikit-learn
+pip install numpy scikit-learn nltk pandas cityhash plotly

@@ -9,13 +9,13 @@ import json
 import numpy as np
 import re
 
-DATA_FILE_PATH = "amazon_products_gpu.tsv"
+DATA_FILE_PATH = "Data/amazon_products_gpu.tsv"
 SEED = 42
 TOLLERANCE = 2e-3
 MAX_ITERATIONS = 10
 MAX_MEANS = 20
-STOPWORDS_FILE = "stopwords_list_it.json"
-SPECIAL_CHARACTERS_FILE = "special_characters.json"
+STOPWORDS_FILE = "Data/stopwords_list_it.json"
+SPECIAL_CHARACTERS_FILE = "Data/special_characters.json"
 K = 10
 T = 35
 COMPONENTS = 3

@@ -13,8 +13,8 @@ from utils import time_in_ms
 # Experiment configurations
 VALUES_FOR_N = [1000, 10000, 100000]
 VALUES_FOR_K = [50, 100, 200]
-REPORT_FILE_EXTENDED = "experiment_results_extended.json"
-REPORT_FILE = "experiment_results.json"
+REPORT_FILE_EXTENDED = "Data/experiment_results_extended.json"
+REPORT_FILE = "Data/experiment_results.json"
 COMPONENTS = 0.85
 PRECISION = 16
 SEED = 42
