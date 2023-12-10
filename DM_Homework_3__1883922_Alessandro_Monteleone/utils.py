@@ -160,25 +160,28 @@ def load_and_retype_data() -> pd.DataFrame:
     return data
 
 def time_in_ms(time_format):
-    # Definisci il pattern regex per estrarre minuti, secondi e millisecondi
-    pattern = re.compile(r'(?:(\d+)\s*m\s*)?(?:(\d+)\s*s\s*)?(\d+)\s*ms')
+    try:
+        return int(time_format)
+    except:
+        # Definisci il pattern regex per estrarre minuti, secondi e millisecondi
+        pattern = re.compile(r'(?:(\d+)\s*m\s*)?(?:(\d+)\s*s\s*)?(\d+)\s*ms')
 
-    # Cerca il pattern nel formato di tempo fornito
-    match = pattern.match(time_format)
+        # Cerca il pattern nel formato di tempo fornito
+        match = pattern.match(time_format)
 
-    if match:
-        # Estrai i valori di minuti, secondi e millisecondi, gestendo i valori opzionali
-        minuti = int(match.group(1)) if match.group(1) else 0
-        secondi = int(match.group(2)) if match.group(2) else 0
-        millisecondi = int(match.group(3))
+        if match:
+            # Estrai i valori di minuti, secondi e millisecondi, gestendo i valori opzionali
+            minuti = int(match.group(1)) if match.group(1) else 0
+            secondi = int(match.group(2)) if match.group(2) else 0
+            millisecondi = int(match.group(3))
 
-        # Calcola il tempo totale in millisecondi
-        tempo_totale_in_millisecondi = (minuti * 60 + secondi) * 1000 + millisecondi
+            # Calcola il tempo totale in millisecondi
+            tempo_totale_in_millisecondi = (minuti * 60 + secondi) * 1000 + millisecondi
 
-        return tempo_totale_in_millisecondi
-    else:
-        # Restituisci un messaggio di errore se il formato non è valido
-        raise ValueError("Il formato del tempo non è valido. Utilizzare il formato 'm s ms'.")
+            return tempo_totale_in_millisecondi
+        else:
+            # Restituisci un messaggio di errore se il formato non è valido
+            raise ValueError("Il formato del tempo non è valido. Utilizzare il formato 'm s ms'.")
 
 
 
@@ -198,7 +201,7 @@ def retype_dataframe(df: pd.DataFrame) -> None:
 class Representation(Enum):
     """Enum for representation of the document"""
     TFIDF = "tfidf"
-    MINWISEHASHING = "minwisehashing"
+    MINWISEHASHING = "minwise"
     RAW = "raw"
     ONE_HOT_ENCODING = "hot"
 
@@ -232,3 +235,11 @@ class SentencePreprocessing():
         tokenized = word_tokenize(sentence)
         return self.remove_stopwords(tokenized) if remove_stopwords else self.remove_special_characters(
             tokenized)
+
+
+def produce_name(normalize, centralize, pca):
+    out = " normalize" if normalize else ""
+    out += " centralize" if centralize else ""
+    out += " pca" if pca else ""
+    return out
+

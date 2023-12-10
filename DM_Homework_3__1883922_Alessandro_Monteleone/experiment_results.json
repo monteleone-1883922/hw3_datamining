@@ -1,0 +1,308 @@
+{
+    "n=1000-k=50-d=50-s=0.02": {
+        "parameters": {
+            "n": 1000,
+            "k": 50,
+            "d": 50,
+            "s": 0.02
+        },
+        "n_components": 58,
+        "kmeans_running_time": "8 s 45 ms",
+        "kmeans_similarity": 1.0,
+        "kmeans_cost": 999.3043185186807,
+        "pca_running_time": "1 s 930 ms",
+        "kmeans_after_pca_running_time": "7 s 336 ms",
+        "kmeans_pca_total_running_time": "9 s 266 ms",
+        "kmeans_pca_similarity": 1.0,
+        "kmeans_pca_cost": 183.87983930796884
+    },
+    "n=1000-k=50-d=50-s=0.1414213562373095": {
+        "parameters": {
+            "n": 1000,
+            "k": 50,
+            "d": 50,
+            "s": 0.1414213562373095
+        },
+        "n_components": 58,
+        "kmeans_running_time": "12 s 745 ms",
+        "kmeans_similarity": 0.97068,
+        "kmeans_cost": 50898.110583334754,
+        "pca_running_time": "1 s 804 ms",
+        "kmeans_after_pca_running_time": "9 s 314 ms",
+        "kmeans_pca_total_running_time": "11 s 118 ms",
+        "kmeans_pca_similarity": 0.9701000000000001,
+        "kmeans_pca_cost": 29111.785873479934
+    },
+    "n=1000-k=50-d=50-s=0.5": {
+        "parameters": {
+            "n": 1000,
+            "k": 50,
+            "d": 50,
+            "s": 0.5
+        },
+        "n_components": 58,
+        "kmeans_running_time": "12 s 696 ms",
+        "kmeans_similarity": 0.01600257055489724,
+        "kmeans_cost": 605952.6961786719,
+        "pca_running_time": "1 s 838 ms",
+        "kmeans_after_pca_running_time": "10 s 464 ms",
+        "kmeans_pca_total_running_time": "12 s 302 ms",
+        "kmeans_pca_similarity": 0.015490711363759466,
+        "kmeans_pca_cost": 564818.7731825691
+    },
+    "n=1000-k=50-d=5000-s=0.02": {
+        "parameters": {
+            "n": 1000,
+            "k": 50,
+            "d": 5000,
+            "s": 0.02
+        },
+        "n_components": 58,
+        "kmeans_running_time": "7 m 31 s 19 ms",
+        "kmeans_similarity": 0.9532177792597532,
+        "kmeans_cost": 101912.94170071665,
+        "pca_running_time": "46 s 156 ms",
+        "kmeans_after_pca_running_time": "5 s 76 ms",
+        "kmeans_pca_total_running_time": "51 s 232 ms",
+        "kmeans_pca_similarity": 1.0,
+        "kmeans_pca_cost": 290.1560164640167
+    },
+    "n=1000-k=50-d=5000-s=0.1414213562373095": {
+        "parameters": {
+            "n": 1000,
+            "k": 50,
+            "d": 5000,
+            "s": 0.1414213562373095
+        },
+        "n_components": 58,
+        "kmeans_running_time": "9 m 2 s 187 ms",
+        "kmeans_similarity": 0.43835529454169275,
+        "kmeans_cost": 5022485.915077463,
+        "pca_running_time": "47 s 31 ms",
+        "kmeans_after_pca_running_time": "7 s 933 ms",
+        "kmeans_pca_total_running_time": "54 s 964 ms",
+        "kmeans_pca_similarity": 0.02036726988503545,
+        "kmeans_pca_cost": 83569.0644574691
+    },
+    "n=1000-k=50-d=5000-s=0.5": {
+        "parameters": {
+            "n": 1000,
+            "k": 50,
+            "d": 5000,
+            "s": 0.5
+        },
+        "n_components": 58,
+        "kmeans_running_time": "9 m 17 s 109 ms",
+        "kmeans_similarity": 0.017322989410541147,
+        "kmeans_cost": 62389595.71067779,
+        "pca_running_time": "46 s 888 ms",
+        "kmeans_after_pca_running_time": "12 s 733 ms",
+        "kmeans_pca_total_running_time": "59 s 621 ms",
+        "kmeans_pca_similarity": 0.015654101050531034,
+        "kmeans_pca_cost": 1042206.2820395306
+    },
+    "n=1000-k=100-d=100-s=0.01": {
+        "parameters": {
+            "n": 1000,
+            "k": 100,
+            "d": 100,
+            "s": 0.01
+        },
+        "n_components": 117,
+        "kmeans_running_time": "1 m 7 s 779 ms",
+        "kmeans_similarity": 1.0,
+        "kmeans_cost": 999.0347937341131,
+        "pca_running_time": "10 s 129 ms",
+        "kmeans_after_pca_running_time": "40 s 196 ms",
+        "kmeans_pca_total_running_time": "50 s 325 ms",
+        "kmeans_pca_similarity": 1.0,
+        "kmeans_pca_cost": 183.20514771259946
+    },
+    "n=1000-k=100-d=100-s=0.1": {
+        "parameters": {
+            "n": 1000,
+            "k": 100,
+            "d": 100,
+            "s": 0.1
+        },
+        "n_components": 117,
+        "kmeans_running_time": "1 m 27 s 830 ms",
+        "kmeans_similarity": 0.95607,
+        "kmeans_cost": 102895.55286282799,
+        "pca_running_time": "9 s 746 ms",
+        "kmeans_after_pca_running_time": "52 s 106 ms",
+        "kmeans_pca_total_running_time": "1 m 1 s 852 ms",
+        "kmeans_pca_similarity": 0.9409499999999998,
+        "kmeans_pca_cost": 59616.77515477114
+    },
+    "n=1000-k=100-d=100-s=0.5": {
+        "parameters": {
+            "n": 1000,
+            "k": 100,
+            "d": 100,
+            "s": 0.5
+        },
+        "n_components": 117,
+        "kmeans_running_time": "1 m 28 s 928 ms",
+        "kmeans_similarity": 0.009657529343208791,
+        "kmeans_cost": 2426422.440867157,
+        "pca_running_time": "10 s 588 ms",
+        "kmeans_after_pca_running_time": "52 s 48 ms",
+        "kmeans_pca_total_running_time": "1 m 2 s 636 ms",
+        "kmeans_pca_similarity": 0.009599251632309869,
+        "kmeans_pca_cost": 2344631.6306022266
+    },
+    "n=1000-k=200-d=200-s=0.005": {
+        "parameters": {
+            "n": 1000,
+            "k": 200,
+            "d": 200,
+            "s": 0.005
+        },
+        "n_components": 235,
+        "kmeans_running_time": "9 m 3 s 78 ms",
+        "kmeans_similarity": 1.0,
+        "kmeans_cost": 998.9115719738535,
+        "pca_running_time": "49 s 154 ms",
+        "kmeans_after_pca_running_time": "5 m 29 s 736 ms",
+        "kmeans_pca_total_running_time": "6 m 18 s 890 ms",
+        "kmeans_pca_similarity": 1.0,
+        "kmeans_pca_cost": 182.27524164089232
+    },
+    "n=1000-k=200-d=200-s=0.07071067811865475": {
+        "parameters": {
+            "n": 1000,
+            "k": 200,
+            "d": 200,
+            "s": 0.07071067811865475
+        },
+        "n_components": 235,
+        "kmeans_running_time": "11 m 23 s 570 ms",
+        "kmeans_similarity": 0.9426000000000001,
+        "kmeans_cost": 207833.38595032122,
+        "pca_running_time": "49 s 892 ms",
+        "kmeans_after_pca_running_time": "6 m 42 s 526 ms",
+        "kmeans_pca_total_running_time": "7 m 32 s 418 ms",
+        "kmeans_pca_similarity": 0.9423449999999999,
+        "kmeans_pca_cost": 121280.35999965307
+    },
+    "n=1000-k=200-d=200-s=0.5": {
+        "parameters": {
+            "n": 1000,
+            "k": 200,
+            "d": 200,
+            "s": 0.5
+        },
+        "n_components": 235,
+        "kmeans_running_time": "11 m 15 s 636 ms",
+        "kmeans_similarity": 0.006261061095560506,
+        "kmeans_cost": 9768975.753216254,
+        "pca_running_time": "49 s 532 ms",
+        "kmeans_after_pca_running_time": "6 m 43 s 452 ms",
+        "kmeans_pca_total_running_time": "7 m 32 s 984 ms",
+        "kmeans_pca_similarity": 0.0060970689170406,
+        "kmeans_pca_cost": 9605075.359799176
+    },
+    "n=10000-k=50-d=50-s=0.02": {
+        "parameters": {
+            "n": 10000,
+            "k": 50,
+            "d": 50,
+            "s": 0.02
+        },
+        "n_components": 58,
+        "kmeans_running_time": "1 m 31 s 227 ms",
+        "kmeans_similarity": 1.0,
+        "kmeans_cost": 9995.506361626842,
+        "pca_running_time": "28 s 953 ms",
+        "kmeans_after_pca_running_time": "53 s 638 ms",
+        "kmeans_pca_total_running_time": "1 m 22 s 591 ms",
+        "kmeans_pca_similarity": 1.0,
+        "kmeans_pca_cost": 1810.8397283636095
+    },
+    "n=10000-k=50-d=50-s=0.1414213562373095": {
+        "parameters": {
+            "n": 10000,
+            "k": 50,
+            "d": 50,
+            "s": 0.1414213562373095
+        },
+        "n_components": 58,
+        "kmeans_running_time": "1 m 57 s 592 ms",
+        "kmeans_similarity": 0.9405059999999998,
+        "kmeans_cost": 519926.7191781845,
+        "pca_running_time": "24 s 224 ms",
+        "kmeans_after_pca_running_time": "1 m 15 s 543 ms",
+        "kmeans_pca_total_running_time": "1 m 39 s 767 ms",
+        "kmeans_pca_similarity": 0.940317777992573,
+        "kmeans_pca_cost": 297147.55756049056
+    },
+    "n=10000-k=50-d=50-s=0.5": {
+        "parameters": {
+            "n": 10000,
+            "k": 50,
+            "d": 50,
+            "s": 0.5
+        },
+        "n_components": 58,
+        "kmeans_running_time": "1 m 57 s 133 ms",
+        "kmeans_similarity": 0.011940888447546996,
+        "kmeans_cost": 6093556.025652533,
+        "pca_running_time": "23 s 661 ms",
+        "kmeans_after_pca_running_time": "1 m 15 s 81 ms",
+        "kmeans_pca_total_running_time": "1 m 38 s 742 ms",
+        "kmeans_pca_similarity": 0.011879840554961309,
+        "kmeans_pca_cost": 5683321.899204499
+    },
+    "n=10000-k=100-d=100-s=0.01": {
+        "parameters": {
+            "n": 10000,
+            "k": 100,
+            "d": 100,
+            "s": 0.01
+        },
+        "n_components": 117,
+        "kmeans_running_time": "11 m 57 s 445 ms",
+        "kmeans_similarity": 1.0,
+        "kmeans_cost": 9998.625105031237,
+        "pca_running_time": "1 m 56 s 656 ms",
+        "kmeans_after_pca_running_time": "7 m 16 s 840 ms",
+        "kmeans_pca_total_running_time": "9 m 13 s 496 ms",
+        "kmeans_pca_similarity": 1.0,
+        "kmeans_pca_cost": 1806.7938526254752
+    },
+    "n=10000-k=100-d=100-s=0.1": {
+        "parameters": {
+            "n": 10000,
+            "k": 100,
+            "d": 100,
+            "s": 0.1
+        },
+        "n_components": 117,
+        "kmeans_running_time": "15 m 15 s 637 ms",
+        "kmeans_similarity": 0.940599,
+        "kmeans_cost": 1039520.1931530864,
+        "pca_running_time": "1 m 48 s 696 ms",
+        "kmeans_after_pca_running_time": "8 m 49 s 708 ms",
+        "kmeans_pca_total_running_time": "10 m 38 s 404 ms",
+        "kmeans_pca_similarity": 0.9551859999999999,
+        "kmeans_pca_cost": 589051.7582940029
+    },
+    "n=10000-k=100-d=100-s=0.5": {
+        "parameters": {
+            "n": 10000,
+            "k": 100,
+            "d": 100,
+            "s": 0.5
+        },
+        "n_components": 117,
+        "kmeans_running_time": "14 m 59 s 834 ms",
+        "kmeans_similarity": 0.0063688305619293015,
+        "kmeans_cost": 24381668.38276635,
+        "pca_running_time": "2 m 2 s 990 ms",
+        "kmeans_after_pca_running_time": "9 m 13 s 322 ms",
+        "kmeans_pca_total_running_time": "11 m 16 s 312 ms",
+        "kmeans_pca_similarity": 0.006350188625690991,
+        "kmeans_pca_cost": 23561808.417780258
+    }
+}

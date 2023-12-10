@@ -172,19 +172,20 @@ def apply_feature_engineering(representation, data=None, clusterization_only=Fal
                                                             preprocessor)
     elif representation == Representation.ONE_HOT_ENCODING:
         data["description"] = one_hot_encodings(data["description"].tolist(), preprocessor)
-    central_vec = None
+
     for index, row in data.iterrows():
         vec = np.array(row["description"] + [replace_if_null(row[field], 0) for field in additional_fields])
 
         result_data.append(vec)
 
+    # centralize
+    if centralize:
+        result_data = result_data - np.mean(result_data, axis=0)
     # normalize
     if normalize:
         matrix_norma = np.linalg.norm(np.array(result_data))
         result_data = np.array(result_data) / matrix_norma
-    # centralize
-    if centralize:
-        result_data = result_data - np.mean(result_data, axis=0)
+
     end_time = int(time.time() * 1000) - start_time
     if pca:
         pca_obj = PCA(n_components=components, random_state=SEED)
@@ -205,7 +206,8 @@ def main():
             "arguments missing, you have to specify what to plot (running times or elbow curve or both), what techniques to use and the max number of means",
             sys.stderr)
         exit(1)
-    max_num_means = MAX_MEANS if len(sys.argv) < 4 else int(sys.argv[3])
+    additional_fields = sys.argv[3].split(",") if len(sys.argv) >= 4 else []
+    max_num_means = MAX_MEANS if len(sys.argv) < 5 else int(sys.argv[4])
 
     np.random.seed(SEED)
     raw_techniques = sys.argv[2].split(",")
@@ -245,10 +247,13 @@ def main():
                                                                                     normalize=technique[1],
                                                                                     pca=technique[2],
                                                                                     centralize=technique[3],
-                                                                                    max_means=max_num_means)
+                                                                                    max_means=max_num_means,additional_fields=additional_fields)
                 variances.append(feature_variances)
                 running_times.append(feature_runningtimes)
-                names.append((technique[0].name.lower() + " variance", technique[0].name.lower() + " running time"))
+                names.append((technique[0].name.lower() + produce_name(technique[1], technique[3],
+                                                                       technique[2]) + " variance",
+                              technique[0].name.lower() + produce_name(technique[1], technique[3],
+                                                                       technique[2]) + " running time"))
         print_runningtimes_and_elbow_curve(variances, running_times, max_num_means, names=names)
 
     elif sys.argv[1].find("elbow") != -1:
@@ -258,12 +263,14 @@ def main():
                 variances.append(raw_variances)
                 names.append("raw data variance")
             else:
-                feature_variances, feature_runningtimes = apply_feature_engineering(technique, normalize=technique[1],
+                feature_variances, feature_runningtimes = apply_feature_engineering(technique[0],
+                                                                                    normalize=technique[1],
                                                                                     pca=technique[2],
                                                                                     centralize=technique[3],
-                                                                                    max_means=max_num_means)
+                                                                                    max_means=max_num_means,additional_fields=additional_fields)
                 variances.append(feature_variances)
-                names.append(technique[0].name.lower() + " variance")
+                names.append(
+                    technique[0].name.lower() + produce_name(technique[1], technique[3], technique[2]) + " variance")
         print_elbow_curve(variances, max_num_means, names=names)
 
 
@@ -274,14 +281,16 @@ def main():
                 running_times.append(raw_runningtimes)
                 names.append("raw data running time")
             else:
-                feature_variances, feature_runningtimes = apply_feature_engineering(technique, normalize=technique[1],
+                feature_variances, feature_runningtimes = apply_feature_engineering(technique[0],
+                                                                                    normalize=technique[1],
                                                                                     pca=technique[2],
                                                                                     centralize=technique[3],
-                                                                                    max_means=max_num_means)
+                                                                                    max_means=max_num_means,additional_fields=additional_fields)
                 running_times.append(feature_runningtimes)
-                names.append(technique[0].name.lower() + " running time")
+                names.append(technique[0].name.lower() + produce_name(technique[1], technique[3],
+                                                                      technique[2]) + " running time")
         print_runningtimes(running_times, max_num_means, names=names)
 
 
 if __name__ == "__main__":
-    main()
+   main()
